@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Categories</title>
+  <link rel="stylesheet" href="Categories.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="categories-body">
+  <header>
+    <h1>Explore Categories</h1>
+  </header>
+
+  <main>
+    <div id="videoGallery"></div>
+    <div class="category-grid">
+      <div class="category-card" data-aos="zoom-in">
+        <img src="download (11).jpg" alt="Elf" />
+        <div class="category-text">Elf</div>
+      </div>
+      <div class="category-card" data-aos="zoom-in">
+        <img src="dark.jpg" alt="Dark Skinned" />
+        <div class="category-text">Dark Skinned</div>
+      </div>
+      <div class="category-card"data-aos="zoom-in">
+        <img src="creampie.jpg" alt="Creampie" />
+        <div class="category-text">Creampie</div>
+      </div>
+      <div class="category-card"data-aos="zoom-in">
+        <img src="un.jpg" alt="Uncensored" />
+        <div class="category-text">Uncensored</div>
+      </div>
+      <div class="category-card"data-aos="zoom-in">
+        <img src="thick.jpg" alt="Uncensored" />
+        <div class="category-text">Thick</div>
+      </div>
+      <div class="category-card"data-aos="zoom-in">
+        <img src="busty.jpg" alt="Uncensored" />
+        <div class="category-text">Busty</div>
+      </div>
+      <div class="category-card"data-aos="zoom-in">
+        <img src="cosplay.jpg" alt="Uncensored" />
+        <div class="category-text">Cosplay</div>
+      </div>
+      <div class="category-card"data-aos="zoom-in">
+        <img src="foot.jpg" alt="Uncensored" />
+        <div class="category-text">Footjob</div>
+      </div>
+      <div class="category-card" data-aos="zoom-in">
+        <img src="boob.jpg" alt="Uncensored" />
+        <div class="category-text">Boobjob</div>
+      </div>
+      <div class="category-card" data-aos="zoom-in">
+        <img src="ahe.jpg" alt="Uncensored" />
+        <div class="category-text">Ahegao</div>
+      </div>
+      <div class="category-card" data-aos="zoom-in">
+        <img src="anal.jpg" alt="Uncensored" />
+        <div class="category-text">Anal</div>
+      </div>
+      <div class="category-card" data-aos="zoom-in">
+        <img src="incest.jpg" alt="Uncensored" />
+        <div class="category-text">Incest</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Hentai World. All rights reserved.</p>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 800,
+    once: true
+  });
+</script>
+<script>
+  document.querySelectorAll('.category-card').forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.add('clicked');
+      setTimeout(() => {
+        card.classList.remove('clicked');
+      }, 400); // match animation duration
+    });
+  });
+</script>
+<script type="module">
+  document.querySelectorAll('.category-card').forEach(card => {
+    card.addEventListener('click', async () => {
+      const category = card.querySelector('.category-text').textContent.trim();
+      const gallery = document.getElementById('videoGallery');
+      gallery.innerHTML = 'Loading...';
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/category/${encodeURIComponent(category)}`);
+        const videos = await res.json();
+
+        gallery.innerHTML = '';
+        if (videos.length === 0) {
+  gallery.innerHTML = '😢 No videos found in this category yet.';`
+  <p>😢 No videos found in this category yet.</p>
+  <a href="upload.html" class="upload-link">Be the first to upload!</a>
+`;
+} else {
+  videos.forEach(video => {
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.innerHTML = `
+      <video src="${video.videoUrl}" controls></video>
+      <h3>${video.title}</h3>
+      <p>${video.description}</p>
+      <p>Views: ${video.views}</p>
+      <p>Likes: <span class="succubus-heart">♥</span> ${video.likes}</p>
+      <p>Uploaded: ${video.uploadDate}</p>
+    `;
+    gallery.appendChild(card);
+  });
+}
+      } catch (err) {
+        console.error('Category load error:', err);
+        gallery.innerHTML = '❌ Failed to load videos.';
+      }
+    });
+  });
+</script>
+</body>
+</html>

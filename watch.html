@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Video</title>
+  <link rel="stylesheet" href="pixel.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">Hentai World</div>
+    <nav>
+      <a href="pixel.html">Home</a>
+      <a href="categories.html">Categories</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="video-container">
+      <video id="mainVideo" controls></video>
+      <h2 id="videoTitle"></h2>
+      <p id="videoDescription"></p>
+      <p id="videoMeta"></p>
+      <button id="likeBtn">♥ Like</button>
+      <a id="downloadBtn" href="#" download>⬇️ Download</a>
+    </div>
+
+    <section class="comments">
+      <h3>💬 Comments</h3>
+      <div id="commentList"></div>
+      <form id="commentForm">
+        <textarea id="commentText" placeholder="Leave a comment..."></textarea>
+        <button type="submit">Post</button>
+      </form>
+    </section>
+  </main>
+
+  <script type="module" src="watch.js"></script>
+</body>
+</html>

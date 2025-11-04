@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Profile</title>
+  <link rel="stylesheet" href="profile.css" />
+</head>
+<body>
+  <div class="profile-container">
+  <nav class="navbar">
+    <a href="pixel.html">Home</a>
+    <a href="#">Categories</a>
+    <a href="#">Artists</a>
+    <a href="#" id="logoutBtn">Logout</a>
+  </nav>
+
+ <section class="creator-profile">
+  <div class="profile-header">
+    <img id="profileImage" src="" alt="Profile Picture" class="profile-avatar">
+    <div class="profile-info">
+      <h2 id="username">bill</h2>
+      <div class="profile-stats">
+        <span><strong>Followers:</strong> <span id="followerCount">0</span></span>
+        <span><strong>Likes:</strong> <span id="likeCount">0</span></span>
+        <span><strong>Downloads:</strong> <span id="downloadCount">0</span></span>
+        <span><strong>Views:</strong> <span id="viewCount">0</span></span>
+      </div>
+      <form id="profilePicForm" enctype="multipart/form-data" class="upload-form">
+        <input type="file" name="profilePic" accept="image/*" required />
+        <button type="submit">Update Profile Picture</button>
+      </form>
+      <p id="uploadStatus" class="upload-status"></p>
+    </div>
+  </div>
+</section>
+<section class="video-upload">
+  <h3>Upload a New Video</h3>
+  <form id="videoUploadForm" enctype="multipart/form-data">
+    <input type="text" name="title" placeholder="Video Title" required />
+    <textarea name="description" placeholder="Video Description" required></textarea>
+    <label>
+      <input type="checkbox" name="copyrightCheck" value="true" required />
+      I confirm this video does not violate copyright
+    </label>
+    <input type="file" name="videoFile" accept="video/*" required />
+    <button type="submit">Upload Video</button>
+    <div id="uploadStatus" class="upload-draft hidden">
+  <p>Uploading <strong id="uploadTitle">...</strong></p>
+  <div class="progress-bar">
+    <div class="progress-fill" style="width: 0%"></div>
+  </div>
+  <p class="upload-status-text">Starting upload...</p>
+</div>
+  </form>
+  <p id="videoUploadStatus" class="upload-status"></p>
+</section>
+</div>
+<script type="module">
+  function timeAgo(date) {
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  return `${Math.floor(seconds / 86400)} days ago`;
+}
+function renderVideoCard(video) {
+  const gallery = document.getElementById('videoGallery');
+  const card = document.createElement('div');
+  card.className = 'video-card';
+  card.innerHTML = `
+    <video src="${video.videoUrl}" controls></video>
+    <h3>${video.title}</h3>
+    <p>${video.description}</p>
+    <p class="meta">
+      <span>${timeAgo(video.uploadDate)}</span> · 
+      <span>${video.views} views</span> · 
+      <span>♥ ${video.likes}</span>
+    </p>
+    <button class="edit-btn" data-id="${video._id}">✏️ Edit</button>
+    <button class="delete-btn" data-id="${video._id}">🗑️ Delete</button>
+  `;
+  gallery.prepend(card);
+}
+  console.log('Token:', localStorage.getItem('token'));
+const token = localStorage.getItem('token');
+
+fetch('http://localhost:3000/api/auth/profile', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+})
+  .then(res => {
+    if (!res.ok) throw new Error('Unauthorized');
+    return res.json();
+  })
+  .then(user => {
+    document.getElementById('username').textContent = user.username;
+    document.getElementById('followerCount').textContent = user.followers || 0;
+      if (user.profilePicture) {
+    document.getElementById('profileImage').src = user.profilePicture;
+  }
+    const gallery = document.getElementById('videoGallery');
+    user.uploads?.forEach(video => {
+  renderVideoCard(video);
+});
+  })
+  .catch(err => {
+    console.error("Failed to load profile:", err);
+    alert("Could not load profile. Make sure you're logged in.");
+  });
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.clear();
+  window.location.href = 'pixel.html';
+});
+document.getElementById('profilePicForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const status = document.getElementById('uploadStatus');
+  status.textContent = 'Uploading...';
+
+  try {
+    const res = await fetch('http://localhost:3000/api/user/profile-picture', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: formData
+    });
+
+    const data = await res.json();
+    if (data.imageUrl) {
+      document.getElementById('profileImage').src = data.imageUrl;
+      status.textContent = '✅ Profile picture updated!';
+    } else {
+      status.textContent = '❌ Upload failed.';
+    }
+  } catch (err) {
+    console.error('Upload error:', err);
+    status.textContent = '❌ Server error.';
+  }
+});
+async function uploadVideo(formData, title) {
+  const uploadStatus = document.getElementById('uploadStatus');
+  const uploadTitle = document.getElementById('uploadTitle');
+  const progressFill = document.querySelector('.progress-fill');
+  const uploadText = document.querySelector('.upload-status-text');
+  const token = localStorage.getItem('token');
+
+  uploadStatus.classList.remove('hidden');
+  uploadTitle.textContent = title;
+  uploadText.textContent = 'Uploading...';
+
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress = Math.min(progress + Math.random() * 10, 90);
+    progressFill.style.width = `${progress}%`;
+  }, 300);
+
+  try {
+    const res = await fetch('http://localhost:3000/api/user/upload-video', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    });
+  
+
+    clearInterval(interval);
+    progressFill.style.width = '100%';
+    uploadText.textContent = 'Upload complete!';
+
+    const { video } = await res.json();
+    renderVideoCard(video);
+  } catch (err) {
+    clearInterval(interval);
+    uploadText.textContent = '❌ Upload failed';
+    console.error('Upload error:', err);
+  }
+}
+document.getElementById('videoUploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert("You must be logged in to upload.");
+    return;
+  }
+
+  const formData = new FormData(e.target);
+  const file = formData.get('videoFile');
+  const title = formData.get('title');
+
+  if (!file || !file.type.startsWith('video/')) {
+    document.getElementById('videoUploadStatus').textContent = '❌ Invalid video file selected.';
+    return;
+  }
+
+  uploadVideo(formData, title);
+});
+document.getElementById('videoGallery').addEventListener('click', async (e) => {
+  const id = e.target.dataset.id;
+  if (!id) return;
+
+  const token = localStorage.getItem('token');
+
+  if (e.target.classList.contains('delete-btn')) {
+    if (confirm('Delete this video?')) {
+      await fetch(`http://localhost:3000/api/user/video/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      e.target.closest('.video-card').remove();
+    }
+  }
+
+  if (e.target.classList.contains('edit-btn')) {
+    const newTitle = prompt('New title:');
+    const newDesc = prompt('New description:');
+    if (newTitle && newDesc) {
+      const res = await fetch(`http://localhost:3000/api/user/video/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ title: newTitle, description: newDesc })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Video updated!');
+        location.reload(); // or re-render the card
+      }
+    }
+  }
+});
+
+   
+</script>
+</body>
+</html>
