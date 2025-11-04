@@ -12,7 +12,7 @@ const videoSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Video', videoSchema);
-const Comment = require('../models/Comment');
+const Comment = require('../models/Comments');
 
 router.post('/video/:id/comment', async (req, res) => {
   const comment = new Comment({
