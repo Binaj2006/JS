@@ -1,3 +1,5 @@
+const express = require('express');
+const router = express.Router();
 const mongoose = require('mongoose');
 const videoSchema = new mongoose.Schema({
   title: String,
